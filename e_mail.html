@@ -1,14 +1,14 @@
 <table style="border: 1px solid #cad9ea;color: #666;table-layout: fixed;empty-cells: show;border-collapse: collapse;">
     <tr>
         <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Spider Name</th>
-        <th>Retry Count</th>
-        <th>Last Time</th>
+        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Retry Count</th>
+        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Last Time</th>
     </tr>
     {% for item in items %}
     <tr>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{item.name}}</td>
-        <td>{{item.count}}</td>
-        <td>{{item.time}}</td>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{item.count}}</td>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{item.time}}</td>
     </tr>
     {% endfor %}
 </table>
