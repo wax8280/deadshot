@@ -5,9 +5,11 @@ import os
 import re
 from collections import OrderedDict
 from setting import *
-import smtplib
-from email.mime.text import MIMEText
-from email.header import Header
+import urllib
+import json
+from template import Templite
+import codecs
+
 
 class FileIO(object):
     @staticmethod
@@ -120,30 +122,34 @@ class Process(object):
 
     @staticmethod
     def make_report(result_list):
-        content = ''
+        context = []
         for each in result_list:
             for spider_name, v in each.items():
 
                 # 找出 retry 大于　MAX_RETRY　的
                 if v['retry_count'] >= MAX_RETRY:
-                    content += spider_name + ' retry_count: ' + str(v['retry_count']) + ' last_time: ' \
-                               + v['retry_last_time'] + '\n'
-        return content
+                    context.append({'name': spider_name, 'count': v['retry_count'], 'time': v['retry_last_time']})
+
+        if context:
+            # 读取并渲染模板
+            with codecs.open(r'./e_mail.html', 'r', 'utf-8') as f:
+                lines = f.readlines()
+            template_email_body = Templite(u"".join(c for c in lines))
+
+            text = template_email_body.render({'items': context})
+            return text
+        else:
+            return None
 
     @staticmethod
     def send_mail(content):
-        message = MIMEText(content, 'plain', 'utf-8')
-        message['From'] = Header("Teddywalker", 'utf-8')
-        message['To'] = Header("Teddywalker", 'utf-8')
-        message['Subject'] = Header('Teddywalker Watching', 'utf-8')
-
+        d = json.dumps({'spider': content})
+        parmas = urllib.urlencode({'private_key': PRIVATE_KEY, 'template_name': TEMPLATE_NAME, 'params': d})
         try:
-            smtpObj = smtplib.SMTP()
-            smtpObj.connect(MAIL_HOST, 25)  # SMTP
-            smtpObj.login(MAIL_USER, MAIL_PASS)
-            smtpObj.sendmail(SENDER, RECEIVERS, message.as_string())
+            r = urllib.urlopen(EMAIL_API_URL, parmas)
+            print r.code
         except Exception as e:
-            print 'failed to send email'
+            print 'failed to send email.status code{}'.format(r.code)
 
     def run(self):
         # 搜索目录以及子目录下相关的文件
@@ -156,10 +162,10 @@ class Process(object):
 
         # 按照retry_count 排序
         rows_by_retey = sorted(result, key=lambda x: x[x.keys()[0]]['retry_count'], reverse=True)
-        report = self.make_report(rows_by_retey)
-
-        print report
-        self.send_mail(report)
+        content = self.make_report(rows_by_retey)
+        if content:
+            print content
+            self.send_mail(content)
 
 if __name__ == '__main__':
     p = Process(LOG_PATH, FILTER_DIR, FILTER_FILE, PATTERN)

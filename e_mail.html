@@ -1,0 +1,37 @@
+<style type="text/css">
+    .table {
+        border: 1px solid #cad9ea;
+        color: #666;
+        table-layout: fixed;
+        empty-cells: show;
+        border-collapse: collapse;
+    }
+
+    .table th {
+        background-repeat: repeat-x;
+        height: 30px;
+    }
+
+    .table td, .table th {
+        border: 1px solid #cad9ea;
+        padding: 0 1em 0;
+    }
+
+    .table tr.alter {
+        background-color: #f5fafe;
+    }
+</style>
+<table table class="table">
+    <tr>
+        <th>Spider Name</th>
+        <th>Retry Count</th>
+        <th>Last Time</th>
+    </tr>
+    {% for item in items %}
+    <tr>
+        <td>{{item.name}}</td>
+        <td>{{item.count}}</td>
+        <td>{{item.time}}</td>
+    </tr>
+    {% endfor %}
+</table>
