@@ -9,6 +9,7 @@ import urllib
 import json
 from template import Templite
 import codecs
+import time
 
 
 class FileIO(object):
@@ -128,7 +129,11 @@ class Process(object):
 
                 # 找出 retry 大于　MAX_RETRY　的
                 if v['retry_count'] >= MAX_RETRY:
-                    context.append({'name': spider_name, 'count': v['retry_count'], 'time': v['retry_last_time']})
+                    print '[debug] now_time - last_retry_time:' + str(
+                        time.time() - time.mktime(time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f")))
+                    if time.time() - time.mktime(
+                            time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f")) < MAX_TIME:
+                        context.append({'name': spider_name, 'count': v['retry_count'], 'time': v['retry_last_time']})
 
         if context:
             # 读取并渲染模板
@@ -166,6 +171,7 @@ class Process(object):
         if content:
             print content
             self.send_mail(content)
+
 
 if __name__ == '__main__':
     p = Process(LOG_PATH, FILTER_DIR, FILTER_FILE, PATTERN)
