@@ -120,18 +120,15 @@ class Process(object):
         context.update({'supervisor_result_context': supervisor_result_context})
 
         for k, v in context.items():
+            # 如果有一个不为空
             if context[k]:
-                break
-            else:
-                return None
-
-        # 读取并渲染模板
-        with codecs.open(r'./e_mail.html', 'r', 'utf-8') as f:
-            lines = f.readlines()
-        template_email_body = Templite(u"".join(lines))
-        text = template_email_body.render(context)
-        ProcessLogger.info(message='text:' + text)
-        return text
+                # 读取并渲染模板
+                with codecs.open(r'./e_mail.html', 'r', 'utf-8') as f:
+                    lines = f.readlines()
+                template_email_body = Templite(u"".join(lines))
+                text = template_email_body.render(context)
+                ProcessLogger.info(message='text:' + text)
+                return text
 
     @staticmethod
     def send_mail(content):
