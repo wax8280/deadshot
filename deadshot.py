@@ -119,16 +119,19 @@ class Process(object):
         ProcessLogger.info(message='supervisor_result_context: ' + str(supervisor_result_context))
         context.update({'supervisor_result_context': supervisor_result_context})
 
-        if context:
-            # 读取并渲染模板
-            with codecs.open(r'./e_mail.html', 'r', 'utf-8') as f:
-                lines = f.readlines()
-            template_email_body = Templite(u"".join(lines))
-            text = template_email_body.render(context)
-            ProcessLogger.info(message='text:' + text)
-            return text
-        else:
-            return None
+        for k, v in context.items():
+            if context[k]:
+                break
+            else:
+                return None
+
+        # 读取并渲染模板
+        with codecs.open(r'./e_mail.html', 'r', 'utf-8') as f:
+            lines = f.readlines()
+        template_email_body = Templite(u"".join(lines))
+        text = template_email_body.render(context)
+        ProcessLogger.info(message='text:' + text)
+        return text
 
     @staticmethod
     def send_mail(content):
@@ -152,7 +155,7 @@ class Process(object):
                                key=lambda x: x[x.keys()[0]]['retry_count'], reverse=True)
 
         # ------------------start 检查Supervisor----------------------------
-        supervisor_result_list = []
+        supervisor_result_list = SupervisorShot.shot()
 
         content = self.make_report(retry_result_list=rows_by_retey, supervisor_result_list=supervisor_result_list)
         if content:
