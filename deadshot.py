@@ -97,10 +97,11 @@ class Process(object):
 
             for each in kwargs['retry_result_list']:
                 for spider_name, v in each.items():
-                    diff_time = time.time() - time.mktime(time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f"))
 
                     # 找出 retry 大于　MAX_RETRY　的
                     if v['retry_count'] >= MAX_RETRY:
+                        diff_time = time.time() - time.mktime(
+                            time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f"))
                         ProcessLogger.info(message='[debug] now_time - last_retry_time:' + str(diff_time))
                         if diff_time < MAX_TIME:
                             retry_result_context.append(
@@ -156,7 +157,7 @@ class Process(object):
         content = self.make_report(retry_result_list=rows_by_retey, supervisor_result_list=supervisor_result_list)
         if content:
             print content
-            self.send_mail(content)
+            # self.send_mail(content)
 
 
 if __name__ == '__main__':

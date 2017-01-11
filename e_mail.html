@@ -1,4 +1,5 @@
 {% if retry_result_context %}
+<h4>RetryShot</h4>
 <table style="border: 1px solid #cad9ea;color: #666;table-layout: fixed;empty-cells: show;border-collapse: collapse;">
     <tr>
         <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Spider Name
@@ -16,8 +17,9 @@
     {% endfor %}
 </table>
 {% endif %}
-<br>
 {% if supervisor_result_context %}
+<br>
+<h4>SupervisorShot</h4>
 <table style="border: 1px solid #cad9ea;color: #666;table-layout: fixed;empty-cells: show;border-collapse: collapse;">
     <tr>
         <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Spider Name
