@@ -11,7 +11,12 @@ import subprocess
 
 from lib.template import Templite
 from lib.file_lib import FileIO
+from lib.deadshot_log import UsualLogging
 from setting import *
+
+RetryShotLogger = UsualLogging('RetryShot')
+SupervisorShotLogger = UsualLogging('SupervisorShot')
+ProcessLogger = UsualLogging('Process')
 
 
 class RetryShot(object):
@@ -89,25 +94,28 @@ class Process(object):
         retry_result_context = []
 
         if kwargs.has_key('retry_result_list'):
+
             for each in kwargs['retry_result_list']:
                 for spider_name, v in each.items():
+                    diff_time = time.time() - time.mktime(time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f"))
 
                     # 找出 retry 大于　MAX_RETRY　的
                     if v['retry_count'] >= MAX_RETRY:
-                        print '[debug] now_time - last_retry_time:' + str(
-                            time.time() - time.mktime(time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f")))
-                        if time.time() - time.mktime(
-                                time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f")) < MAX_TIME:
+                        ProcessLogger.info(message='[debug] now_time - last_retry_time:' + str(diff_time))
+                        if diff_time < MAX_TIME:
                             retry_result_context.append(
                                 {'name': spider_name, 'count': v['retry_count'], 'time': v['retry_last_time']})
+
+        ProcessLogger.info(message='retry_result_list: ' + str(retry_result_context))
         context.update({'retry_result_context': retry_result_context})
-        # TODO
         # ------------------检查Supervisor----------------------------
         supervisor_result_context = []
         if kwargs.has_key('supervisor_result_list'):
             for each in kwargs['supervisor_result_list']:
                 if each['status'] != 'RUNNING':
                     supervisor_result_context.append(each)
+
+        ProcessLogger.info(message='supervisor_result_context: ' + str(supervisor_result_context))
         context.update({'supervisor_result_context': supervisor_result_context})
 
         if context:
@@ -116,6 +124,7 @@ class Process(object):
                 lines = f.readlines()
             template_email_body = Templite(u"".join(lines))
             text = template_email_body.render(context)
+            ProcessLogger.info(message='text:' + text)
             return text
         else:
             return None
@@ -128,7 +137,7 @@ class Process(object):
             r = urllib.urlopen(EMAIL_API_URL, parmas)
             print r.code
         except Exception as e:
-            print 'failed to send email.status code{}'.format(r.code)
+            ProcessLogger.waring(message='cant send email.err_info: ' + str(e))
 
     def run(self):
         # -------------------start 检查retry----------------------------------
@@ -141,11 +150,8 @@ class Process(object):
         rows_by_retey = sorted([RetryShot.shot(each_file, WATCH_COUNT) for each_file in file_list],
                                key=lambda x: x[x.keys()[0]]['retry_count'], reverse=True)
 
-        # -------------------end 检查retry----------------------------------
-
         # ------------------start 检查Supervisor----------------------------
-        supervisor_result_list = SupervisorShot.shot()
-        # ------------------end 检查Supervisor----------------------------
+        supervisor_result_list = []
 
         content = self.make_report(retry_result_list=rows_by_retey, supervisor_result_list=supervisor_result_list)
         if content:

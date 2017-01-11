@@ -42,9 +42,9 @@ class VLogging(object):
 
 
 class UsualLogging(VLogging):
-    info_mes = '[INFO] {message}'
-    error_mes = '[ERROR] {message}'
-    waring_mes = '[WARING] {message}'
+    info_mes = '[INFO] {}'
+    error_mes = '[ERROR] {}'
+    waring_mes = '[WARING] {}'
 
     def __init__(self, name):
         self._name = name

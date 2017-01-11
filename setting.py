@@ -17,7 +17,7 @@ WATCH_COUNT = 500
 MAX_RETRY = 500
 
 # 最大通知时间，在这之前的retry会发送邮件通知
-MAX_TIME = 3600
+MAX_TIME = float('inf')
 
 PRIVATE_KEY = '1140923668'
 TEMPLATE_NAME = 'spider'
