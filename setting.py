@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # coding: utf-8
 
-LOG_PATH = './test_data/spider/'
-# LOG_PATH = '/mnt/teddywalker/log'
+# LOG_PATH = './test_data/spider/'
+LOG_PATH = '/mnt/teddywalker/log'
 
 FILTER_DIR = ['_info$']
 FILTER_FILE = ['_info.log$']

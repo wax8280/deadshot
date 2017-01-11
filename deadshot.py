@@ -156,7 +156,7 @@ class Process(object):
         content = self.make_report(retry_result_list=rows_by_retey, supervisor_result_list=supervisor_result_list)
         if content:
             print content
-            # self.send_mail(content)
+            self.send_mail(content)
 
 
 if __name__ == '__main__':
