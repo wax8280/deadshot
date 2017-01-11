@@ -64,7 +64,7 @@ class SupervisorShot(object):
     @staticmethod
     def shot():
         result = []
-        command_ = "supervisorctl status"
+        command_ = "sudo supervisorctl status"
         fh = subprocess.Popen(command_, stdout=subprocess.PIPE, shell=True)
 
         for i in fh.stdout.readlines():
