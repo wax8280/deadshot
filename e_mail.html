@@ -1,8 +1,28 @@
+{% if retry_result_context %}
 <table style="border: 1px solid #cad9ea;color: #666;table-layout: fixed;empty-cells: show;border-collapse: collapse;">
     <tr>
-        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Spider Name</th>
-        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Retry Count</th>
+        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Spider Name
+        </th>
+        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Retry Count
+        </th>
         <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Last Time</th>
+    </tr>
+    {% for retry_result_context_item in retry_result_context %}
+    <tr>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{retry_result_context_item.name}}</td>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{retry_result_context_item.count}}</td>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{retry_result_context_item.time}}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<table style="border: 1px solid #cad9ea;color: #666;table-layout: fixed;empty-cells: show;border-collapse: collapse;">
+    <tr>
+        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Spider Name
+        </th>
+        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Status</th>
+        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">UpTime</th>
     </tr>
     {% for item in items %}
     <tr>
