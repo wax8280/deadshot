@@ -57,10 +57,22 @@ class RetryShot(object):
 
 class SupervisorShot(object):
     @staticmethod
-    def shot(file_path, num=100):
+    def shot():
+        result = []
         command_ = "supervisorctl status"
         fh = subprocess.Popen(command_, stdout=subprocess.PIPE, shell=True)
-        return list(fh.stdout.readlines())
+
+        for i in fh.stdout.readlines():
+            grp = re.search('([\d\w]+?)[\s]+?([\d\w]+?)[\s]+(.*?)\n', i)
+            result.append(
+                {
+                    'name': grp.group(1),
+                    'status': grp.group(2),
+                    'message': re.sub('pid [\d]+, ', '', grp.group(3)),
+                }
+            )
+
+        return result
 
 
 class Process(object):
@@ -91,6 +103,12 @@ class Process(object):
         context.update({'retry_result_context': retry_result_context})
         # TODO
         # ------------------检查Supervisor----------------------------
+        supervisor_result_context = []
+        if kwargs.has_key('supervisor_result_list'):
+            for each in kwargs['supervisor_result_list']:
+                if each['status'] != 'RUNNING':
+                    supervisor_result_context.append(each)
+        context.update({'supervisor_result_context': supervisor_result_context})
 
         if context:
             # 读取并渲染模板
@@ -119,25 +137,20 @@ class Process(object):
         file_list = FileIO.search_files(self.log_path, self.filter_dirname_list, self.filter_filename_list)
 
         # 分析所有相关文件的最后 WATCH_COUNT 行
-        result = []
-        for each_file in file_list:
-            result.append(RetryShot.shot(each_file, WATCH_COUNT))
-
         # 按照 retry_count 排序
-        rows_by_retey = sorted(result, key=lambda x: x[x.keys()[0]]['retry_count'], reverse=True)
+        rows_by_retey = sorted([RetryShot.shot(each_file, WATCH_COUNT) for each_file in file_list],
+                               key=lambda x: x[x.keys()[0]]['retry_count'], reverse=True)
 
         # -------------------end 检查retry----------------------------------
 
-
         # ------------------start 检查Supervisor----------------------------
-
+        supervisor_result_list = SupervisorShot.shot()
         # ------------------end 检查Supervisor----------------------------
 
-
-        content = self.make_report(retry_result_list=rows_by_retey)
+        content = self.make_report(retry_result_list=rows_by_retey, supervisor_result_list=supervisor_result_list)
         if content:
             print content
-            self.send_mail(content)
+            # self.send_mail(content)
 
 
 if __name__ == '__main__':

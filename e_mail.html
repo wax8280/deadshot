@@ -16,19 +16,21 @@
     {% endfor %}
 </table>
 {% endif %}
-
+<br>
+{% if supervisor_result_context %}
 <table style="border: 1px solid #cad9ea;color: #666;table-layout: fixed;empty-cells: show;border-collapse: collapse;">
     <tr>
         <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Spider Name
         </th>
         <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Status</th>
-        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">UpTime</th>
+        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">message</th>
     </tr>
-    {% for item in items %}
+    {% for supervisor_result_context_item in supervisor_result_context %}
     <tr>
-        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{item.name}}</td>
-        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{item.count}}</td>
-        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{item.time}}</td>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.name}}</td>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.status}}</td>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.message}}</td>
     </tr>
     {% endfor %}
 </table>
+{% endif %}

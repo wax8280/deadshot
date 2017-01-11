@@ -1,10 +1,12 @@
 # !/usr/bin/env python
 # coding: utf-8
 
-# LOG_PATH = '/home/vincent/Documents/git_clone/teddywalker/log'
-LOG_PATH = '/mnt/teddywalker/log'
+LOG_PATH = './test_data/spider/'
+# LOG_PATH = '/mnt/teddywalker/log'
+
 FILTER_DIR = ['_info$']
 FILTER_FILE = ['_info.log$']
+DEADSHOT_LOG_PATH = './log/'
 
 PATTERN = {
     'retry': '\[(.+?)\]\[(.+?)\] \[Retry\]',
