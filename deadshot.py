@@ -23,11 +23,11 @@ class RetryShot(object):
     pattern = PATTERN
 
     @staticmethod
-    def shot(file_path, num=100):
+    def count(file_path, num=100):
         """
         统计log中错误与成功的数目
 
-        >>> RetryShot.shot('./test_data/spider/huskywalker/RL0066')
+        >>> RetryShot.count('./test_data/spider/huskywalker/RL0066')
         {'RL0066': OrderedDict([('process_count', 78), ('process_last_time', '2017-01-07 10:22:31,000'), ('retry_count', 22), ('retry_last_time', '2016-12-27 20:30:49,973')])}
 
         :param file_path:   string
@@ -57,12 +57,31 @@ class RetryShot(object):
                 result[file_name].setdefault(name + '_last_time', last_time)
             else:
                 result[file_name].setdefault(name + '_count', 0)
+
         return result
+
+    @staticmethod
+    def shot(retry_result_list):
+        retry_result_context = []
+
+        for each in retry_result_list:
+            for spider_name, v in each.items():
+
+                # 找出 retry 大于　MAX_RETRY　的
+                if v['retry_count'] >= MAX_RETRY:
+                    diff_time = time.time() - time.mktime(
+                        time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f"))
+                    ProcessLogger.info(message='[debug] now_time - last_retry_time:' + str(diff_time))
+                    if diff_time < MAX_TIME:
+                        retry_result_context.append(
+                            {'name': spider_name, 'count': v['retry_count'], 'time': v['retry_last_time']})
+
+        return retry_result_context
 
 
 class SupervisorShot(object):
     @staticmethod
-    def shot():
+    def get_status():
         result = []
         command_ = "sudo supervisorctl status"
         fh = subprocess.Popen(command_, stdout=subprocess.PIPE, shell=True)
@@ -79,6 +98,11 @@ class SupervisorShot(object):
 
         return result
 
+    @staticmethod
+    def shot(supervisor_result_list):
+        return [each for each in supervisor_result_list
+                if each['status'] not in SUPERVISOR_NORMAL_STATUS and each['name'] not in SUPERVISOR_FILTERED_NAME]
+
 
 class Process(object):
     def __init__(self, log_path, filter_dirname_list, filter_filename_list):
@@ -91,39 +115,22 @@ class Process(object):
         context = {}
 
         # -------------------检查retry----------------------------------
-        retry_result_context = []
-
         if kwargs.has_key('retry_result_list'):
+            retry_result_context = RetryShot.shot(kwargs['retry_result_list'])
+            ProcessLogger.info(message='retry_result_list: ' + str(retry_result_context))
+            context.update({'retry_result_context': retry_result_context})
 
-            for each in kwargs['retry_result_list']:
-                for spider_name, v in each.items():
-
-                    # 找出 retry 大于　MAX_RETRY　的
-                    if v['retry_count'] >= MAX_RETRY:
-                        diff_time = time.time() - time.mktime(
-                            time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f"))
-                        ProcessLogger.info(message='[debug] now_time - last_retry_time:' + str(diff_time))
-                        if diff_time < MAX_TIME:
-                            retry_result_context.append(
-                                {'name': spider_name, 'count': v['retry_count'], 'time': v['retry_last_time']})
-
-        ProcessLogger.info(message='retry_result_list: ' + str(retry_result_context))
-        context.update({'retry_result_context': retry_result_context})
         # ------------------检查Supervisor----------------------------
-        supervisor_result_context = []
         if kwargs.has_key('supervisor_result_list'):
-            for each in kwargs['supervisor_result_list']:
-                if each['status'] != 'RUNNING':
-                    supervisor_result_context.append(each)
-
-        ProcessLogger.info(message='supervisor_result_context: ' + str(supervisor_result_context))
-        context.update({'supervisor_result_context': supervisor_result_context})
+            supervisor_result_context = SupervisorShot.shot(kwargs['supervisor_result_list'])
+            ProcessLogger.info(message='supervisor_result_context: ' + str(supervisor_result_context))
+            context.update({'supervisor_result_context': supervisor_result_context})
 
         for k, v in context.items():
             # 如果有一个不为空
             if context[k]:
                 # 读取并渲染模板
-                with codecs.open(r'./e_mail.html', 'r', 'utf-8') as f:
+                with codecs.open(E_MAIL_TEMPLATE_PATH, 'r', 'utf-8') as f:
                     lines = f.readlines()
                 template_email_body = Templite(u"".join(lines))
                 text = template_email_body.render(context)
@@ -148,11 +155,11 @@ class Process(object):
 
         # 分析所有相关文件的最后 WATCH_COUNT 行
         # 按照 retry_count 排序
-        rows_by_retey = sorted([RetryShot.shot(each_file, WATCH_COUNT) for each_file in file_list],
+        rows_by_retey = sorted([RetryShot.count(each_file, WATCH_COUNT) for each_file in file_list],
                                key=lambda x: x[x.keys()[0]]['retry_count'], reverse=True)
 
         # ------------------start 检查Supervisor----------------------------
-        supervisor_result_list = SupervisorShot.shot()
+        supervisor_result_list = SupervisorShot.get_status()
 
         content = self.make_report(retry_result_list=rows_by_retey, supervisor_result_list=supervisor_result_list)
         if content:
