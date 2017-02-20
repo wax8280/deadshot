@@ -8,6 +8,8 @@ import urllib
 import re
 from collections import OrderedDict
 import subprocess
+import datetime
+from copy import deepcopy
 
 from lib.template import Templite
 from lib.file_lib import FileIO
@@ -105,13 +107,50 @@ class SupervisorShot(object):
 
 
 class Process(object):
-    def __init__(self, log_path, filter_dirname_list, filter_filename_list):
+    def __init__(self, log_path, filter_dirname_list, filter_filename_list, sended_list_filename):
         self.log_path = log_path
         self.filter_dirname_list = filter_dirname_list
         self.filter_filename_list = filter_filename_list
+        self.sended_filename = sended_list_filename
 
-    @staticmethod
-    def make_report(**kwargs):
+        with open(self.sended_filename, 'r') as f:
+            self.sended = json.load(f)
+
+    def just_send_new(self, context):
+        new_sended = deepcopy(self.sended)
+
+        # 如在之前失败的，但是如今running（比如bug已经修复了），就要从sended列表里面去掉
+        for k, v in new_sended.items():
+            if new_sended[k]:
+                # 注意:要更新Python的list，推荐使用切片
+                for each in new_sended[k][:]:
+                    # context 里面保存这次失败的爬虫
+                    if each not in str(context[k]):
+                        new_sended[k].remove(each)
+
+        to_send = {}
+        if datetime.datetime.now().hour == ALL_SEND_TIME:
+            to_send = context
+            for k, w in context.items():
+                for each in context[k]:
+                    new_sended[k].append(each['name'])
+        else:
+            for k, w in context.items():
+                to_send.update({k: []})
+                for each in context[k]:
+                    # 没发送过的
+                    if each['name'] not in self.sended[k]:
+                        to_send[k].append(each)
+                        # 添加到sended列表里面
+                        new_sended[k].append(each['name'])
+
+        # 写入文件
+        with open(self.sended_filename, 'w') as f:
+            json.dump(new_sended, f)
+
+        return to_send
+
+    def get_shot(self, callback=None, **kwargs):
         context = {}
 
         # -------------------检查retry----------------------------------
@@ -126,6 +165,11 @@ class Process(object):
             ProcessLogger.info(message='supervisor_result_context: ' + str(supervisor_result_context))
             context.update({'supervisor_result_context': supervisor_result_context})
 
+        if callback:
+            return callback(context)
+
+    @staticmethod
+    def make_report(context):
         for k, v in context.items():
             # 如果有一个不为空
             if context[k]:
@@ -161,12 +205,16 @@ class Process(object):
         # ------------------start 检查Supervisor----------------------------
         supervisor_result_list = SupervisorShot.get_status()
 
-        content = self.make_report(retry_result_list=rows_by_retey, supervisor_result_list=supervisor_result_list)
+        ctx = self.get_shot(retry_result_list=rows_by_retey,
+                            supervisor_result_list=supervisor_result_list,
+                            callback=self.just_send_new)
+        content = self.make_report(ctx)
+
         if content:
             print content
             self.send_mail(content)
 
 
 if __name__ == '__main__':
-    p = Process(LOG_PATH, FILTER_DIR, FILTER_FILE)
+    p = Process(LOG_PATH, FILTER_DIR, FILTER_FILE, SENDED_LOGFILE)
     p.run()
