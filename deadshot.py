@@ -146,7 +146,9 @@ class Process(object):
                         new_sended[k].append(each['name'])
 
         # 写入文件
-        new_sended = list(set(new_sended))
+        for k, v in new_sended.items():
+            if new_sended[k]:
+                new_sended[k] = list(set(new_sended[k]))
         with open(self.sended_filename, 'w') as f:
             json.dump(new_sended, f)
 
