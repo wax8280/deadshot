@@ -118,6 +118,7 @@ class Process(object):
 
     def just_send_new(self, context):
         new_sended = deepcopy(self.sended)
+        to_send = {'fixed_context': []}
 
         # 如在之前失败的，但是如今running（比如bug已经修复了），就要从sended列表里面去掉
         for k, v in new_sended.items():
@@ -127,8 +128,8 @@ class Process(object):
                     # context 里面保存这次失败的爬虫
                     if each not in str(context[k]):
                         new_sended[k].remove(each)
+                        to_send['fixed_context'].append(each)
 
-        to_send = {}
         if datetime.datetime.now().hour == ALL_SEND_TIME:
             to_send = context
             for k, w in context.items():
