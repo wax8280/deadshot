@@ -130,7 +130,7 @@ class Process(object):
                         new_sended[k].remove(each)
                         to_send['fixed_context'].append(each)
 
-        if datetime.datetime.now().hour == ALL_SEND_TIME:
+        if datetime.datetime.now().hour in ALL_SEND_TIME:
             to_send = context
             for k, w in context.items():
                 for each in context[k]:
