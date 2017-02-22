@@ -132,6 +132,7 @@ class Process(object):
 
         if datetime.datetime.now().hour in ALL_SEND_TIME:
             to_send = context
+            to_send.update({'fixed_context': []})
             for k, w in context.items():
                 for each in context[k]:
                     new_sended[k].append(each['name'])
