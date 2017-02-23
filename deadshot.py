@@ -21,11 +21,8 @@ SupervisorShotLogger = UsualLogging('SupervisorShot')
 ProcessLogger = UsualLogging('Process')
 
 
-class RetryShot(object):
-    pattern = PATTERN
-
-    @staticmethod
-    def count(file_path, num=100):
+class BaseShot(object):
+    def count(self, file_path, num=100):
         """
         统计log中错误与成功的数目
 
@@ -37,11 +34,8 @@ class RetryShot(object):
         :return:            dict
         """
         lines = FileIO.read_last_lines(file_path, num)
-        # 以文件名作为key
         file_name = os.path.basename(file_path)
-
         result = {file_name: OrderedDict()}
-
         for name, pattern in RetryShot.pattern.items():
             # got 表示符合当前pattern的line
             got = []
@@ -59,14 +53,70 @@ class RetryShot(object):
                 result[file_name].setdefault(name + '_last_time', last_time)
             else:
                 result[file_name].setdefault(name + '_count', 0)
-
         return result
 
-    @staticmethod
-    def shot(retry_result_list):
+    def shot(self):
+        pass
+
+#
+# class UnknowShot(BaseShot):
+#     pattern = UNKNOWN_PATTERN
+#
+#     def __init__(self, log_path, filter_dirname_list, filter_filename_list):
+#         """
+#
+#         :param log_path:                日志所在的文件夹        '/mnt/teddywalker/log'
+#         :param filter_dirname_list:     需要监控的文件夹名字      ['_info$']
+#         :param filter_filename_list:    需要监控的文件名字       ['_info.log$']
+#         """
+#         self.log_path = log_path
+#         self.filter_dirname_list = filter_dirname_list
+#         self.filter_filename_list = filter_filename_list
+#         # 根据筛选条件，得出符合条件的文件路径
+#         file_list = FileIO.search_files(self.log_path, self.filter_dirname_list, self.filter_filename_list)
+#
+#     def shot(retry_result_list):
+#         retry_result_context = []
+#         for each in retry_result_list:
+#             for spider_name, v in each.items():
+#
+#                 # 找出 retry 大于　MAX_RETRY　的
+#                 if v['retry_count'] >= MAX_RETRY:
+#                     diff_time = time.time() - time.mktime(
+#                         time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f"))
+#                     ProcessLogger.info(message='[debug] now_time - last_retry_time:' + str(diff_time))
+#                     if diff_time < MAX_TIME:
+#                         retry_result_context.append(
+#                             {'name': spider_name, 'count': v['retry_count'], 'time': v['retry_last_time']})
+#
+#         return retry_result_context
+
+
+class RetryShot(BaseShot):
+    pattern = PATTERN
+    name = 'retry_result_context'
+
+    def __init__(self, log_path, filter_dirname_list, filter_filename_list):
+        """
+        :param log_path:                日志所在的文件夹        '/mnt/teddywalker/log'
+        :param filter_dirname_list:     需要监控的文件夹名字      ['_info$']
+        :param filter_filename_list:    需要监控的文件名字       ['_info.log$']
+        """
+        self.log_path = log_path
+        self.filter_dirname_list = filter_dirname_list
+        self.filter_filename_list = filter_filename_list
+        # 根据筛选条件，得出符合条件的文件路径
+        self.file_list = FileIO.search_files(self.log_path, self.filter_dirname_list, self.filter_filename_list)
+
+        # 分析所有相关文件的最后 WATCH_COUNT 行
+        # 按照 retry_count 排序
+        self.retry_result_list = sorted([self.count(each_file, WATCH_COUNT) for each_file in self.file_list],
+                                        key=lambda x: x[x.keys()[0]]['retry_count'], reverse=True)
+
+    def shot(self):
         retry_result_context = []
 
-        for each in retry_result_list:
+        for each in self.retry_result_list:
             for spider_name, v in each.items():
 
                 # 找出 retry 大于　MAX_RETRY　的
@@ -74,16 +124,21 @@ class RetryShot(object):
                     diff_time = time.time() - time.mktime(
                         time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f"))
                     ProcessLogger.info(message='[debug] now_time - last_retry_time:' + str(diff_time))
+                    # 时间差大于MAX_TIME
                     if diff_time < MAX_TIME:
                         retry_result_context.append(
                             {'name': spider_name, 'count': v['retry_count'], 'time': v['retry_last_time']})
+        ProcessLogger.info(message='retry_result_list: ' + str(retry_result_context))
+        return {self.name: retry_result_context}
 
-        return retry_result_context
 
+class SupervisorShot(BaseShot):
+    name = 'supervisor_result_context'
 
-class SupervisorShot(object):
-    @staticmethod
-    def get_status():
+    def __init__(self):
+        self.supervisor_result_list = self.get_status()
+
+    def get_status(self):
         result = []
         command_ = "sudo supervisorctl status"
         fh = subprocess.Popen(command_, stdout=subprocess.PIPE, shell=True)
@@ -97,21 +152,25 @@ class SupervisorShot(object):
                     'message': re.sub('pid [\d]+, ', '', grp.group(3)),
                 }
             )
-
         return result
 
-    @staticmethod
-    def shot(supervisor_result_list):
-        return [each for each in supervisor_result_list
-                if each['status'] not in SUPERVISOR_NORMAL_STATUS and each['name'] not in SUPERVISOR_FILTERED_NAME]
+    def shot(self):
+        ctx = {self.name: []}
+        for each in self.supervisor_result_list:
+            if (each['status'] not in SUPERVISOR_NORMAL_STATUS and each['name'] not in SUPERVISOR_FILTERED_NAME):
+                ctx[self.name].append(each)
+
+        return ctx
 
 
 class Process(object):
-    def __init__(self, log_path, filter_dirname_list, filter_filename_list, sended_list_filename):
-        self.log_path = log_path
-        self.filter_dirname_list = filter_dirname_list
-        self.filter_filename_list = filter_filename_list
+    def __init__(self, sended_list_filename, **kwargs):
         self.sended_filename = sended_list_filename
+
+        log_path, filter_dirname_list, filter_filename_list = kwargs['supervisor_shot_ctx']
+        self.retryshot_ins = RetryShot(log_path, filter_dirname_list, filter_filename_list)
+
+        self.supervisorshot_ins = SupervisorShot()
 
         with open(self.sended_filename, 'r') as f:
             self.sended = json.load(f)
@@ -155,20 +214,11 @@ class Process(object):
 
         return to_send
 
-    def get_shot(self, callback=None, **kwargs):
+    def get_shot(self, callback=None):
         context = {}
 
-        # -------------------检查retry----------------------------------
-        if kwargs.has_key('retry_result_list'):
-            retry_result_context = RetryShot.shot(kwargs['retry_result_list'])
-            ProcessLogger.info(message='retry_result_list: ' + str(retry_result_context))
-            context.update({'retry_result_context': retry_result_context})
-
-        # ------------------检查Supervisor----------------------------
-        if kwargs.has_key('supervisor_result_list'):
-            supervisor_result_context = SupervisorShot.shot(kwargs['supervisor_result_list'])
-            ProcessLogger.info(message='supervisor_result_context: ' + str(supervisor_result_context))
-            context.update({'supervisor_result_context': supervisor_result_context})
+        context.update(self.supervisorshot_ins.shot())
+        context.update(self.retryshot_ins.shot())
 
         if callback:
             return callback(context)
@@ -197,29 +247,14 @@ class Process(object):
             ProcessLogger.waring(message='cant send email.err_info: ' + str(e))
 
     def run(self):
-        # -------------------start 检查retry----------------------------------
+        ctx = self.get_shot(callback=self.just_send_new)
 
-        # 搜索目录以及子目录下相关的文件
-        file_list = FileIO.search_files(self.log_path, self.filter_dirname_list, self.filter_filename_list)
-
-        # 分析所有相关文件的最后 WATCH_COUNT 行
-        # 按照 retry_count 排序
-        rows_by_retey = sorted([RetryShot.count(each_file, WATCH_COUNT) for each_file in file_list],
-                               key=lambda x: x[x.keys()[0]]['retry_count'], reverse=True)
-
-        # ------------------start 检查Supervisor----------------------------
-        supervisor_result_list = SupervisorShot.get_status()
-
-        ctx = self.get_shot(retry_result_list=rows_by_retey,
-                            supervisor_result_list=supervisor_result_list,
-                            callback=self.just_send_new)
         content = self.make_report(ctx)
-
         if content:
             print content
-            self.send_mail(content)
+            # self.send_mail(content)
 
 
 if __name__ == '__main__':
-    p = Process(LOG_PATH, FILTER_DIR, FILTER_FILE, SENDED_LOGFILE)
+    p = Process(SENDED_LOGFILE,supervisor_shot_ctx=(LOG_PATH, FILTER_DIR, FILTER_FILE))
     p.run()
