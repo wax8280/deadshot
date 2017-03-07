@@ -6,7 +6,7 @@ from copy import deepcopy
 import os
 
 from deadshot.lib.deadshot_log import UsualLogging
-from deadshot.lib.send_email import make_report
+from deadshot.lib.send_email import make_report,send_mail
 from deadshot.setting import *
 from deadshot.shoters import RetryShot, SupervisorShot, UnknowShot
 
@@ -81,8 +81,8 @@ class DeadShot(object):
         ctx = self.get_shot(callback=self.just_send_new)
         content = make_report(ctx)
         if content:
-            print content
-            # send_mail(content)
+            # print content
+            send_mail(content)
 
 
 if __name__ == '__main__':
