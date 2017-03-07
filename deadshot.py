@@ -29,8 +29,7 @@ class DeadShot(object):
             with open(self.sended_filename, 'r') as f:
                 sended = json.load(f)
         else:
-            sended = {"retry_result_context": [], "supervisor_result_context": []}
-
+            sended = {"retry_result_context": [], "supervisor_result_context": [], "unknown_result_context": []}
         new_sended = deepcopy(sended)
         nex_context = {'fixed_context': []}
 
@@ -60,7 +59,6 @@ class DeadShot(object):
                         nex_context[k].append(each)
                         # 添加到sended列表里面
                         new_sended[k].append(each['name'])
-
         # 写入文件
         for k, v in new_sended.items():
             if new_sended[k]:
@@ -76,13 +74,11 @@ class DeadShot(object):
         context.update(self.supervisorshot_ins.shot())
         context.update(self.retryshot_ins.shot())
         context.update(self.unknowshot_ins.shot())
-
         if callback:
             return callback(context)
 
     def run(self):
         ctx = self.get_shot(callback=self.just_send_new)
-
         content = make_report(ctx)
         if content:
             print content
