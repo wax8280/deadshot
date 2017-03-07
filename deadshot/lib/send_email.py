@@ -4,8 +4,8 @@ import codecs
 import json
 import urllib
 
-from deadshot.lib import Templite
-from deadshot.lib import UsualLogging
+from deadshot.lib.template import Templite
+from deadshot.lib.deadshot_log import UsualLogging
 from deadshot.setting import E_MAIL_TEMPLATE_PATH,PRIVATE_KEY,TEMPLATE_NAME,EMAIL_API_URL
 
 EmailShotLogger = UsualLogging('Email')
