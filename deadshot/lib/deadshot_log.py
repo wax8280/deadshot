@@ -3,10 +3,10 @@
 
 import logging
 import os
-import sys
-from logging.handlers import WatchedFileHandler
-from setting import DEADSHOT_LOG_PATH
 from functools import partial
+from logging.handlers import WatchedFileHandler
+
+from deadshot.setting import DEADSHOT_LOG_PATH
 
 LOG_PATH = DEADSHOT_LOG_PATH
 
