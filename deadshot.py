@@ -3,6 +3,8 @@
 import json
 from deadshot.lib.deadshot_log import UsualLogging
 from deadshot.lib.send_email import make_report
+import traceback
+import requests
 from deadshot.setting import *
 from deadshot.shoters import RetryShot, SupervisorShot, UnknowShot
 
@@ -65,8 +67,30 @@ def slave():
     return json.dumps(result)
 
 
+def master():
+    ctxs = []
+    error_message = ''
+    for server_name, server_ip in SLAVE_IP.items():
+        try_time = 0
+        while try_time < RETRY_TIME:
+            try:
+                res = requests.get('http://' + server_ip + ':' + str(SLAVE_PORT))
+            except Exception as e:
+                traceback.print_exc()
+                try_time += 1
+                if try_time == RETRY_TIME:
+                    error_message += "Reach the maximum retry.Server name:{}.\nErrInfo:{}\n".format(server_name, e)
+                continue
+
+            if res.status_code == 200:
+                ctxs.append(json.loads(res.content))
+                break
+
+    print make_report(ctxs, error_message)
+
+
 if __name__ == '__main__':
     if TYPE == 'slave':
-        app.run(host='0.0.0.0', port=38383)
-    else:
-        pass
+        app.run(host='0.0.0.0', port=SLAVE_PORT)
+    elif TYPE == 'master':
+        master()

@@ -1,6 +1,4 @@
 {% if retry_result_context %}
-<h3>{% server_name %}</h3>
-<hr>
 <h4>RetryShot</h4>
 <table style="border: 1px solid #cad9ea;color: #666;table-layout: fixed;empty-cells: show;border-collapse: collapse;">
     <tr>
@@ -12,6 +10,7 @@
     </tr>
     {% for retry_result_context_item in retry_result_context %}
     <tr>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{retry_result_context_item.server_name}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{retry_result_context_item.name}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{retry_result_context_item.count}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{retry_result_context_item.time}}</td>
@@ -30,6 +29,7 @@
     </tr>
     {% for unknown_result_context_item in unknown_result_context %}
     <tr>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{unknown_result_context_item.server_name}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{unknown_result_context_item.name}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{unknown_result_context_item.last_time}}</td>
     </tr>
@@ -50,6 +50,7 @@
     </tr>
     {% for supervisor_result_context_item in supervisor_result_context %}
     <tr>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.server_name}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.name}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.status}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.message}}</td>
@@ -57,3 +58,5 @@
     {% endfor %}
 </table>
 {% endif %}
+
+<b>{{ error_message }}</b>
