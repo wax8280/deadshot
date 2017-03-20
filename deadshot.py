@@ -70,6 +70,16 @@ def slave():
 def master():
     ctxs = []
     error_message = ''
+
+    p = DeadShot(
+        supervisor_shot_ctx=(
+            {'log_path': LOG_PATH,
+             'filter_dirname_list': LOG_FILTER_DIR,
+             'filter_filename_list': LOG_FILTER_FILE}),
+        unknowshot_shot_ctx=({'log_path': UNKNOWN_LOG_PATH}),
+    )
+    ctxs.append(p.run())
+
     for server_name, server_ip in SLAVE_IP.items():
         try_time = 0
         while try_time < RETRY_TIME:
