@@ -1,12 +1,8 @@
 # !/usr/bin/env python
 # coding: utf-8
-import datetime
 import json
-from copy import deepcopy
-import os
-
 from deadshot.lib.deadshot_log import UsualLogging
-from deadshot.lib.send_email import make_report, send_mail
+from deadshot.lib.send_email import make_report
 from deadshot.setting import *
 from deadshot.shoters import RetryShot, SupervisorShot, UnknowShot
 
@@ -14,7 +10,7 @@ DeadShotLogger = UsualLogging('DeadShot')
 
 
 class DeadShot(object):
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         """shot完之后回调self.callbacks，用于装饰"""
 
         # 实例化shoter
@@ -43,20 +39,29 @@ class DeadShot(object):
         return context
 
     def run(self):
-        ctx = self.get_shot()
-        content = make_report(ctx)
-        if content:
-            # print content
-            send_mail(content)
+        return make_report(self.get_shot())
 
 
-if __name__ == '__main__':
+from flask import Flask
+
+app = Flask(__name__)
+
+
+@app.route('/')
+def slave():
     p = DeadShot(
-        SENDED_LOGFILE,
         supervisor_shot_ctx=(
             {'log_path': LOG_PATH,
              'filter_dirname_list': LOG_FILTER_DIR,
              'filter_filename_list': LOG_FILTER_FILE}),
         unknowshot_shot_ctx=({'log_path': UNKNOWN_LOG_PATH}),
     )
-    p.run()
+    result = p.run()
+    return json.dumps(result)
+
+
+if __name__ == '__main__':
+    if TYPE == 'slave':
+        app.run(port=38383)
+    else:
+        pass
