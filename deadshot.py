@@ -10,7 +10,8 @@ DeadShotLogger = UsualLogging('DeadShot')
 
 
 def add_server_name(ctx):
-    return ctx.update({'server_name': SERVER_NAME})
+    ctx.update({'server_name': SERVER_NAME})
+    return ctx
 
 
 class DeadShot(object):
