@@ -2,7 +2,7 @@
 # coding: utf-8
 import json
 from deadshot.lib.deadshot_log import UsualLogging
-from deadshot.lib.send_email import make_report
+from deadshot.lib.send_email import make_report, send_mail
 import traceback
 import requests
 from deadshot.setting import *
@@ -96,7 +96,9 @@ def master():
                 ctxs.append(json.loads(res.content))
                 break
 
-    print make_report(ctxs, error_message)
+    content = make_report(ctxs, error_message)
+    print content
+    send_mail(content)
 
 
 if __name__ == '__main__':
