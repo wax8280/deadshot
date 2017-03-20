@@ -62,6 +62,6 @@ def slave():
 
 if __name__ == '__main__':
     if TYPE == 'slave':
-        app.run(port=38383)
+        app.run(host='0.0.0.0', port=38383)
     else:
         pass
