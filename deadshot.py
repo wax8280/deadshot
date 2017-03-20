@@ -9,6 +9,10 @@ from deadshot.shoters import RetryShot, SupervisorShot, UnknowShot
 DeadShotLogger = UsualLogging('DeadShot')
 
 
+def add_server_name(ctx):
+    return ctx.update({'server_name': SERVER_NAME})
+
+
 class DeadShot(object):
     def __init__(self, **kwargs):
         """shot完之后回调self.callbacks，用于装饰"""
@@ -25,7 +29,7 @@ class DeadShot(object):
         ]
 
         # 每一个callback接受一个context字典,并返回一个context字典,用于装饰
-        self.callbacks = []
+        self.callbacks = [add_server_name]
 
     def get_shot(self):
         context = {}
@@ -39,7 +43,7 @@ class DeadShot(object):
         return context
 
     def run(self):
-        return make_report(self.get_shot())
+        return self.get_shot()
 
 
 from flask import Flask

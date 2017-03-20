@@ -1,4 +1,6 @@
 {% if retry_result_context %}
+<h3>{% server_name %}</h3>
+<hr>
 <h4>RetryShot</h4>
 <table style="border: 1px solid #cad9ea;color: #666;table-layout: fixed;empty-cells: show;border-collapse: collapse;">
     <tr>
@@ -51,21 +53,6 @@
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.name}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.status}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.message}}</td>
-    </tr>
-    {% endfor %}
-</table>
-{% endif %}
-
-{% if fixed_context %}
-<br>
-<h4>spider that error 1 hour before but already fixed</h4>
-<table style="border: 1px solid #cad9ea;color: #666;table-layout: fixed;empty-cells: show;border-collapse: collapse;">
-    <tr>
-        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Spider Name</th>
-    </tr>
-    {% for fixed_context_item in fixed_context %}
-    <tr>
-        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{fixed_context_item}}</td>
     </tr>
     {% endfor %}
 </table>
