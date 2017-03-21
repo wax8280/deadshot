@@ -1,27 +1,18 @@
 TYPE : 'master'
 #slave
 SERVER_NAME : 'spider5'
-RETRY_TIME : 10
+MASTER_REQUSET_RETRY_TIME: 10
 SLAVE_PORT : 38383
+SLAVE_IP :
+    'spider1': '120.25.222.158'
+    'spider6': '120.25.122.61'
+    'spdier7': '112.74.96.190'
 
-LOG_PATH : './test_data/spider/'
-UNKNOWN_LOG_PATH : '/mnt/octopus/log/_unknown'
 E_MAIL_TEMPLATE_PATH : './deadshot/e_mail.html'
 DEADSHOT_LOG_PATH : './log/'
 
-LOG_FILTER_DIR :
-    - '_info$'
 
-LOG_FILTER_FILE :
-    - '_info.log$'
-
-PATTERN :
-    'retry': '\[(.+?)\]\[(.+?)\] \[Retry\]'
-    'process': '\[(.+?)\]\[(.+?)\] \[process\]'
-
-UNKNOWN_PATTERN :
-    'unknow': '\[(.+?)\]\[(.+?)\]'
-
+# ---------------- SupervisorShoter ----------------
 # 不在次列表中的,都被视为异常状态
 SUPERVISOR_NORMAL_STATUS :
     - 'RUNNING'
@@ -29,14 +20,32 @@ SUPERVISOR_NORMAL_STATUS :
 SUPERVISOR_FILTERED_NAME :
     - 'teddywalker_RL0069'
 
+# ---------------- RetryShoter ----------------
+RETRY_LOG_PATH : './test_data/spider/'
+RETRY_LOG_FILTER_DIR :
+    - '_info$'
 
-WATCH_COUNT : 500
-MAX_RETRY : 500
+RETRY_LOG_FILTER_FILE :
+    - '_info.log$'
 
-# 最大通知时间，在这之前的retry会发送邮件通知
-MAX_TIME : 999999999
-UNKNOWN_TIME_INTERVAL : 3600
+RETRY_LAST_LINES : 500
+RETRY_MAX_COUNT: 500
 
+# 最大通知时间，在这之后的retry会发送邮件通知
+RETRY_MAX_TIME : 999999999
+
+RETRY_PATTERN :
+    'retry': '\[(.+?)\]\[(.+?)\] \[Retry\]'
+    'process': '\[(.+?)\]\[(.+?)\] \[process\]'
+
+# ---------------- UnknownShoter ------------------
+UNKNOWN_LOG_PATH : '/mnt/octopus/log/_unknown'
+# 最大通知时间，在这之后的unknown会发送邮件通知
+UNKNOWN_MAX_TIME : 3600
+UNKNOWN_PATTERN :
+    'unknow': '\[(.+?)\]\[(.+?)\]'
+
+# ----------------- SendEmail --------------------
 PRIVATE_KEY : ''
 TEMPLATE_NAME : ''
 EMAIL_API_URL : ''

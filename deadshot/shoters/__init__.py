@@ -20,8 +20,8 @@ class BaseShot(object):
 class UnknowShot(BaseShot):
     name = 'unknown_result_context'
 
-    def __init__(self, log_path, filter_dirname_list=[''], filter_filename_list=[''], unknown_time_interval=3600,
-                 pattern=config['UNKNOWN_PATTERN']):
+    def __init__(self, log_path, filter_dirname_list=[''], filter_filename_list=[''],
+                 unknown_time_interval=config['UNKNOWN_MAX_TIME'], pattern=config['UNKNOWN_PATTERN']):
         """
 
         :param log_path:                日志所在的文件夹        '/mnt/teddywalker/log'
@@ -81,7 +81,7 @@ class UnknowShot(BaseShot):
 
 
 class RetryShot(BaseShot):
-    pattern = config['PATTERN']
+    pattern = config['RETRY_PATTERN']
     name = 'retry_result_context'
 
     def __init__(self, log_path, filter_dirname_list, filter_filename_list):
@@ -97,10 +97,10 @@ class RetryShot(BaseShot):
         self.file_list = search_files(self.log_path, self.filter_dirname_list, self.filter_filename_list)
         self.process_log = UsualLogging('Process')
 
-        # 分析所有相关文件的最后 WATCH_COUNT 行
+        # 分析所有相关文件的最后 RETRY_LAST_LINES 行
         # 按照 retry_count 排序
         self.retry_result_list = sorted(
-            [self.count_linebase(each_file, self.pattern, config['WATCH_COUNT']) for each_file in self.file_list],
+            [self.count_linebase(each_file, self.pattern, config['RETRY_LAST_LINES']) for each_file in self.file_list],
             key=lambda x: x[x.keys()[0]]['retry_count'], reverse=True)
 
     def count_linebase(self, file_path, pattern, num=100):
@@ -140,12 +140,12 @@ class RetryShot(BaseShot):
         for each in self.retry_result_list:
             for spider_name, v in each.items():
 
-                # 找出 retry 大于　MAX_RETRY　的
-                if v['retry_count'] >= config['MAX_RETRY']:
+                # 找出 retry 大于　RETRY_MAX_COUNT　的
+                if v['retry_count'] >= config['RETRY_MAX_COUNT']:
                     diff_time = time.time() - time.mktime(time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f"))
                     self.process_log.info(message='[debug] now_time - last_retry_time:' + str(diff_time))
-                    # 时间差大于MAX_TIME
-                    if diff_time < config['MAX_TIME']:
+                    # 时间差大于 RETRY_MAX_TIME
+                    if diff_time < config['RETRY_MAX_TIME']:
                         ctx[self.name].append({
                             'name': spider_name,
                             'count': v['retry_count'],
