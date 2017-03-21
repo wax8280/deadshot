@@ -184,7 +184,7 @@ class SupervisorShot(BaseShot):
         for each in self.supervisor_result_list:
             if (
                             each['status'] not in config['SUPERVISOR_NORMAL_STATUS']
-                    and each['name'] not in config['SUPERVISOR_FILTERED_NAME '] \
+                    and each['name'] not in config['SUPERVISOR_FILTERED_NAME'] \
                     ):
                 ctx[self.name].append(each)
 
