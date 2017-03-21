@@ -97,7 +97,7 @@ def master():
 
 
 if __name__ == '__main__':
-    if config['TYPE '] == 'slave':
+    if config['TYPE'] == 'slave':
         app.run(host='0.0.0.0', port=config['SLAVE_PORT'])
-    elif config['TYPE '] == 'master':
+    elif config['TYPE'] == 'master':
         master()
