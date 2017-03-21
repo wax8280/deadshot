@@ -2,4 +2,4 @@
 # coding: utf-8
 import yaml
 
-config = yaml.load(open('config.yml', 'r'))
+config = yaml.load(open('./deadshot/config.yml', 'r'))
