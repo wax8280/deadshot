@@ -14,7 +14,6 @@ DeadShotLogger = UsualLogging('DeadShot')
 
 
 class DeadShot(object):
-
     """
     实例化shoter并执行shoter的run()方法获取context，最后将context作为参数依次调用callback。
     callback相当于钩子函数，self.callbacks是一个由多个callback组成的钩子函数链。
@@ -35,7 +34,7 @@ class DeadShot(object):
         ]
 
         # 每一个callback接受一个context字典,并返回一个context字典,用于装饰
-        self.callbacks = [add_server_name]
+        self.callbacks = [add_author, add_server_name]
 
     def get_shot(self):
         context = {}
