@@ -24,7 +24,6 @@
 {% endif %}
 
 {% if unknown_result_context %}
-<hr/>
 <p style="font-size:200%;font-weight:bold;">UnknownShot</p>
 <table style="border: 1px solid #cad9ea;color: #666;table-layout: fixed;empty-cells: show;border-collapse: collapse;">
     <tr>
@@ -47,7 +46,6 @@
 {% endif %}
 
 {% if supervisor_result_context %}
-<hr/>
 <p style="font-size:200%;font-weight:bold;">SupervisorShot</p>
 <table style="border: 1px solid #cad9ea;color: #666;table-layout: fixed;empty-cells: show;border-collapse: collapse;">
     <tr>
@@ -70,5 +68,5 @@
     {% endfor %}
 </table>
 {% endif %}
-<hr/>
+<br>
 <b>{{ error_message }}</b>
