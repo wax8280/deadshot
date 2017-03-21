@@ -15,7 +15,7 @@ def add_server_name(ctx):
 def add_author(ctx):
     files_path = search_files(config['SPIDER_SCRIPT_PATH'], [''], ['[^_].py$'])
     for each_file_path in files_path:
-        command_ = "git log -n 1 {}".format(each_file_path)
+        command_ = "cd {} && git log -n 1 {}".format(config['SPIDER_GIT_PATH'], each_file_path)
         fh = subprocess.Popen(command_, stdout=subprocess.PIPE, shell=True)
         author = re.search('Author:\s+(.*)$', list(fh.stdout.readlines())[1].strip()).group(1)
 
