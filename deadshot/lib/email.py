@@ -12,11 +12,12 @@ EmailShotLogger = UsualLogging('Email')
 
 
 def make_report(ctxs, error_message):
+    """将汇总的context添加server_name并渲染E-Mail模板"""
     content = {
         'error_message': error_message,
         'unknown_result_context': [],
         'supervisor_result_context': [],
-        'retry_result_context': [],
+        'retry_result_cont  ext': [],
     }
     for ctx in ctxs:
         for k, v in ctx.items():
@@ -36,6 +37,7 @@ def make_report(ctxs, error_message):
 
 
 def send_mail(content):
+    """发送邮件"""
     d = json.dumps({'spider': content})
     parmas = urllib.urlencode(
         {'private_key': config['PRIVATE_KEY'], 'template_name': config['TEMPLATE_NAME'], 'params': d})

@@ -1,5 +1,29 @@
 # !/usr/bin/env python
 # coding: utf-8
+"""一个类似Django的简单的模板引擎
+访问变量的属性或方法::
+    {{var.modifer.modifier|filter|filter}}
+循环::
+    {% for var in list %}...{% endfor %}
+条件判断::
+    {% if var %}...{% endif %}
+注释::
+    {# This will be ignored #}
+我通过向Template的构造函数传入模板，产生一个实例，我们就完成了编译。
+之后我们可以多次调用render方法渲染，从而得到不同的结果。
+    templite = Templite('''
+        <h1>Hello {{name|upper}}!</h1>
+        {% for topic in topics %}
+            <p>You are interested in {{topic}}.</p>
+        {% endif %}
+        ''',
+        {'upper': str.upper},
+    )
+    text = templite.render({
+        'name': "Ned",
+        'topics': ['Python', 'Geometry', 'Juggling'],
+    })
+"""
 
 import re
 

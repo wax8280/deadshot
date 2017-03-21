@@ -2,7 +2,7 @@
 # coding: utf-8
 import json
 from deadshot.lib.deadshot_log import UsualLogging
-from deadshot.lib.send_email import make_report, send_mail
+from deadshot.lib.email import make_report, send_mail
 import traceback
 import requests
 import deadshot.config
@@ -14,6 +14,12 @@ DeadShotLogger = UsualLogging('DeadShot')
 
 
 class DeadShot(object):
+
+    """
+    实例化shoter并执行shoter的run()方法获取context，最后将context作为参数依次调用callback。
+    callback相当于钩子函数，self.callbacks是一个由多个callback组成的钩子函数链。
+    """
+
     def __init__(self, **kwargs):
         """shot完之后回调self.callbacks，用于装饰"""
 
