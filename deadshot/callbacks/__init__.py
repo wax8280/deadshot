@@ -13,6 +13,7 @@ def add_server_name(ctx):
 
 
 def add_author(ctx):
+    # 获得该目录下所有不以"_"开头，并且以".py"结尾的文件路径
     files_path = search_files(config['SPIDER_SCRIPT_PATH'], [''], ['[^_].py$'])
     for each_file_path in files_path:
         command_ = "cd {} && git log -n 1 {}".format(config['SPIDER_GIT_PATH'], each_file_path)

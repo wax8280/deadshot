@@ -1,37 +1,54 @@
+# slave与master分别表示从，主。
+# slave会一直运行一个服务器在后台；master请求SLAVE_IP里所有的slave并进行整合与发送邮件
 TYPE : 'master'
-#slave
-SERVER_NAME : 'spider5'
-MASTER_REQUSET_RETRY_TIME: 10
-SLAVE_PORT : 38383
-SLAVE_IP :
-    'spider1': '120.25.222.158'
-    'spider6': '120.25.122.61'
-    'spdier7': '112.74.96.190'
 
+# master请求slave时失败的最大重试次数
+MASTER_REQUSET_RETRY_TIME: 10
+
+# slave的开放端口
+SLAVE_PORT : 38383
+
+# 用于master请求的slave主机ip列表
+SLAVE_IP :
+    'spider1': ''
+    'spider6': ''
+    'spdier7': ''
+
+# E-Mail模板文件的路径
 E_MAIL_TEMPLATE_PATH : './deadshot/e_mail.html'
+
+# Deadshot日志路径
 DEADSHOT_LOG_PATH : './log/'
 
-
+#　以下为Shoter设置
 # ---------------- SupervisorShoter ----------------
 # 不在次列表中的,都被视为异常状态
 SUPERVISOR_NORMAL_STATUS :
     - 'RUNNING'
 
+# 需要忽略的爬虫编号
 SUPERVISOR_FILTERED_NAME :
-    - 'teddywalker_RL0069'
+    - 'teddywalker_RL_XM0001_1'
 
 # ---------------- RetryShoter ----------------
-RETRY_LOG_PATH : './test_data/spider/'
+# 爬虫retry日志的路径
+RETRY_LOG_PATH : '/mnt/octopus/log'
+
+# 需要过滤的文件夹与文件
 RETRY_LOG_FILTER_DIR :
     - '_info$'
-
 RETRY_LOG_FILTER_FILE :
     - '_info.log$'
 
+# 查看日志的最后N行
 RETRY_LAST_LINES : 500
+
+# 当日志retry数达到RETRY_MAX_COUNT时发送警报
 RETRY_MAX_COUNT: 500
 
-# 最大通知时间，在这之后的retry会发送邮件通知
+# 最大通知超时时间
+# 假设log里面最后一条retry log的时间为last_retry_log_time
+# 当now - last_retry_log_time > RETRY_MAX_TIME　时发送警报
 RETRY_MAX_TIME : 999999999
 
 RETRY_PATTERN :
@@ -39,9 +56,12 @@ RETRY_PATTERN :
     'process': '\[(.+?)\]\[(.+?)\] \[process\]'
 
 # ---------------- UnknownShoter ------------------
+# unkonwn log 的路径
 UNKNOWN_LOG_PATH : '/mnt/octopus/log/_unknown'
-# 最大通知时间，在这之后的unknown会发送邮件通知
+
+# 最大通知超时时间　同上
 UNKNOWN_MAX_TIME : 3600
+
 UNKNOWN_PATTERN :
     'unknow': '\[(.+?)\]\[(.+?)\]'
 
@@ -49,3 +69,11 @@ UNKNOWN_PATTERN :
 PRIVATE_KEY : ''
 TEMPLATE_NAME : ''
 EMAIL_API_URL : ''
+
+# 以下为callback设置
+# ----------------- add_author -------------------
+SPIDER_SCRIPT_PATH : '/home/spider/teddywalker/teddywalker/spiders'
+SPIDER_GIT_PATH : '/home/spider/teddywalker'
+
+# ----------------- add_server_name --------------
+SERVER_NAME : 'spider5'
