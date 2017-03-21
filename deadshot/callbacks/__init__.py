@@ -22,6 +22,6 @@ def add_author(ctx):
         file_name = os.path.basename(each_file_path)
         for k, value_dict_list in ctx.items():
             for each_value_dict in value_dict_list:
-                if file_name.lower() in each_value_dict['name'].lower():
+                if file_name.lower().replace('.py', '') in each_value_dict['name'].lower():
                     each_value_dict.update({'author': author})
     return ctx
