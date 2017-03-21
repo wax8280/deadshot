@@ -1,14 +1,11 @@
 # !/usr/bin/env python
 # coding: utf-8
-import os
-import re
-import subprocess
 import time
 from collections import OrderedDict
 
-from deadshot.lib.file_lib import FileIO
+from deadshot.lib.file_lib import *
 from deadshot.lib.deadshot_log import UsualLogging
-from deadshot.setting import *
+from deadshot.config import config
 
 
 class BaseShot(object):
@@ -24,7 +21,7 @@ class UnknowShot(BaseShot):
     name = 'unknown_result_context'
 
     def __init__(self, log_path, filter_dirname_list=[''], filter_filename_list=[''], unknown_time_interval=3600,
-                 pattern=UNKNOWN_PATTERN):
+                 pattern=config['UNKNOWN_PATTERN']):
         """
 
         :param log_path:                日志所在的文件夹        '/mnt/teddywalker/log'
@@ -36,7 +33,7 @@ class UnknowShot(BaseShot):
         self.filter_dirname_list = filter_dirname_list
         self.filter_filename_list = filter_filename_list
         # 根据筛选条件，得出符合条件的文件路径
-        self.file_list = FileIO.search_files(self.log_path, self.filter_dirname_list, self.filter_filename_list)
+        self.file_list = search_files(self.log_path, self.filter_dirname_list, self.filter_filename_list)
         self.unknown_time_interval = unknown_time_interval
 
         """
@@ -56,7 +53,7 @@ class UnknowShot(BaseShot):
         """
         从文件后面开始读取，满足time.time() - last_log_time < time_interval的行，返回True
         """
-        last_line = FileIO.read_last_lines(file_path, 1)[0]
+        last_line = read_last_lines(file_path, 1)[0]
         file_name = os.path.basename(file_path)
         result = None
         for name, pattern in pattern.items():
@@ -84,7 +81,7 @@ class UnknowShot(BaseShot):
 
 
 class RetryShot(BaseShot):
-    pattern = PATTERN
+    pattern = config['PATTERN']
     name = 'retry_result_context'
 
     def __init__(self, log_path, filter_dirname_list, filter_filename_list):
@@ -97,13 +94,13 @@ class RetryShot(BaseShot):
         self.filter_dirname_list = filter_dirname_list
         self.filter_filename_list = filter_filename_list
         # 根据筛选条件，得出符合条件的文件路径
-        self.file_list = FileIO.search_files(self.log_path, self.filter_dirname_list, self.filter_filename_list)
+        self.file_list = search_files(self.log_path, self.filter_dirname_list, self.filter_filename_list)
         self.process_log = UsualLogging('Process')
 
         # 分析所有相关文件的最后 WATCH_COUNT 行
         # 按照 retry_count 排序
         self.retry_result_list = sorted(
-            [self.count_linebase(each_file, self.pattern, WATCH_COUNT) for each_file in self.file_list],
+            [self.count_linebase(each_file, self.pattern, config['WATCH_COUNT']) for each_file in self.file_list],
             key=lambda x: x[x.keys()[0]]['retry_count'], reverse=True)
 
     def count_linebase(self, file_path, pattern, num=100):
@@ -116,7 +113,7 @@ class RetryShot(BaseShot):
         :param num:         int
         :return:            dict
         """
-        lines = FileIO.read_last_lines(file_path, num)
+        lines = read_last_lines(file_path, num)
         file_name = os.path.basename(file_path)
         result = {file_name: OrderedDict()}
         for name, pattern in pattern.items():
@@ -144,11 +141,11 @@ class RetryShot(BaseShot):
             for spider_name, v in each.items():
 
                 # 找出 retry 大于　MAX_RETRY　的
-                if v['retry_count'] >= MAX_RETRY:
+                if v['retry_count'] >= config['MAX_RETRY']:
                     diff_time = time.time() - time.mktime(time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f"))
                     self.process_log.info(message='[debug] now_time - last_retry_time:' + str(diff_time))
                     # 时间差大于MAX_TIME
-                    if diff_time < MAX_TIME:
+                    if diff_time < config['MAX_TIME']:
                         ctx[self.name].append({
                             'name': spider_name,
                             'count': v['retry_count'],
@@ -186,8 +183,8 @@ class SupervisorShot(BaseShot):
         self.get_status()
         for each in self.supervisor_result_list:
             if (
-                            each['status'] not in SUPERVISOR_NORMAL_STATUS
-                    and each['name'] not in SUPERVISOR_FILTERED_NAME \
+                            each['status'] not in config['SUPERVISOR_NORMAL_STATUS']
+                    and each['name'] not in config['SUPERVISOR_FILTERED_NAME '] \
                     ):
                 ctx[self.name].append(each)
 

@@ -6,9 +6,9 @@ import os
 from functools import partial
 from logging.handlers import WatchedFileHandler
 
-from deadshot.setting import DEADSHOT_LOG_PATH
+from deadshot.config import config
 
-LOG_PATH = DEADSHOT_LOG_PATH
+LOG_PATH = config['DEADSHOT_LOG_PATH']
 
 
 class VLogging(object):

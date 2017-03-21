@@ -1,0 +1,42 @@
+TYPE : 'master'
+#slave
+SERVER_NAME : 'spider5'
+RETRY_TIME : 10
+SLAVE_PORT : 38383
+
+LOG_PATH : './test_data/spider/'
+UNKNOWN_LOG_PATH : '/mnt/octopus/log/_unknown'
+E_MAIL_TEMPLATE_PATH : './deadshot/e_mail.html'
+DEADSHOT_LOG_PATH : './log/'
+
+LOG_FILTER_DIR :
+    - '_info$'
+
+LOG_FILTER_FILE :
+    - '_info.log$'
+
+PATTERN :
+    'retry': '\[(.+?)\]\[(.+?)\] \[Retry\]'
+    'process': '\[(.+?)\]\[(.+?)\] \[process\]'
+
+UNKNOWN_PATTERN :
+    'unknow': '\[(.+?)\]\[(.+?)\]'
+
+# 不在次列表中的,都被视为异常状态
+SUPERVISOR_NORMAL_STATUS :
+    - 'RUNNING'
+
+SUPERVISOR_FILTERED_NAME :
+    - 'teddywalker_RL0069'
+
+
+WATCH_COUNT : 500
+MAX_RETRY : 500
+
+# 最大通知时间，在这之前的retry会发送邮件通知
+MAX_TIME : 999999999
+UNKNOWN_TIME_INTERVAL : 3600
+
+PRIVATE_KEY : ''
+TEMPLATE_NAME : ''
+EMAIL_API_URL : ''
