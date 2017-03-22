@@ -171,7 +171,7 @@ class SupervisorShot(BaseShot):
             path = os.path.join(self.conf['SPIDER_SUPERVISOR_LOG_PATH'], grp.group(1) + '_access.log')
             lines = read_last_lines(path, self.conf.get('CHECK_SUPERVISOR_LOG_LINE', 1000))
 
-            if 'spider_exceptions' in str(lines) or 'Traceback' in str(lines):
+            if 'Traceback' in str(lines):
                 is_normal = False
             else:
                 is_normal = True
