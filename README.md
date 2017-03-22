@@ -131,6 +131,9 @@ SUPERVISOR_FILTERED_NAME :
 
 # 爬虫的supervisor log的路径。用于读取log用于判断爬虫是正常退出还是异常退出。
 SPIDER_SUPERVISOR_LOG_PATH : ''
+
+# 读取多少条supervisor log 用于判断爬虫是正常退出还是异常退出。
+CHECK_SUPERVISOR_LOG_LINE : 1000
 # ---------------- RetryShoter ----------------
 # 爬虫retry日志的路径
 RETRY_LOG_PATH : '/mnt/octopus/log'
