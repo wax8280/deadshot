@@ -86,8 +86,8 @@ def master():
                 break
 
     content = make_report(ctxs, error_message)
-    print content.encode('utf-8')
     send_mail(content)
+    print content.encode('utf-8')
 
 
 if __name__ == '__main__':
