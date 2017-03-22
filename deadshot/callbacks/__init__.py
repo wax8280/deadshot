@@ -24,5 +24,5 @@ def add_author(ctx):
         for k, value_dict_list in ctx.items():
             for each_value_dict in value_dict_list:
                 if file_name.lower().replace('.py', '') in each_value_dict['name'].lower():
-                    each_value_dict.update({'author': author})
+                    each_value_dict.update({'author': author.decode('utf-8')})
     return ctx
