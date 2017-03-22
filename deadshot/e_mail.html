@@ -55,7 +55,8 @@
         </th>
         <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Author</th>
         <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Status</th>
-        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">message</th>
+        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Message</th>
+        <th style="background-repeat: repeat-x;height: 30px;border: 1px solid #cad9ea;padding: 0 1em 0;">Normal Exit</th>
     </tr>
     {% for supervisor_result_context_item in supervisor_result_context %}
     <tr>
@@ -64,6 +65,7 @@
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.author}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.status}}</td>
         <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.message}}</td>
+        <td style="border: 1px solid #cad9ea;padding: 0 1em 0;">{{supervisor_result_context_item.is_normal}}</td>
     </tr>
     {% endfor %}
 </table>

@@ -129,6 +129,8 @@ SUPERVISOR_NORMAL_STATUS :
 SUPERVISOR_FILTERED_NAME :
     - 'teddywalker_RL_XM0001_1'
 
+# 爬虫的supervisor log的路径。用于读取log用于判断爬虫是正常退出还是异常退出。
+SPIDER_SUPERVISOR_LOG_PATH : ''
 # ---------------- RetryShoter ----------------
 # 爬虫retry日志的路径
 RETRY_LOG_PATH : '/mnt/octopus/log'
