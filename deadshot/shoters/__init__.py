@@ -5,7 +5,6 @@ from collections import OrderedDict
 
 from deadshot.lib.file_lib import *
 from deadshot.lib.deadshot_log import UsualLogging
-from deadshot.config import config
 
 
 class BaseShot(object):
@@ -20,21 +19,21 @@ class BaseShot(object):
 class UnknowShot(BaseShot):
     name = 'unknown_result_context'
 
-    def __init__(self, log_path, filter_dirname_list=[''], filter_filename_list=[''],
-                 unknown_time_interval=config['UNKNOWN_MAX_TIME'], pattern=config['UNKNOWN_PATTERN']):
+    def __init__(self, conf, filter_dirname_list=[''], filter_filename_list=['']):
         """
 
         :param log_path:                日志所在的文件夹        '/mnt/teddywalker/log'
         :param filter_dirname_list:     需要监控的文件夹名字      ['_info$']
         :param filter_filename_list:    需要监控的文件名字       ['_info.log$']
         """
-        self.pattern = pattern
-        self.log_path = log_path
+        self.conf = conf
+        self.pattern = self.conf['UNKNOWN_PATTERN']
+        self.log_path = self.conf['UNKNOWN_LOG_PATH']
         self.filter_dirname_list = filter_dirname_list
         self.filter_filename_list = filter_filename_list
         # 根据筛选条件，得出符合条件的文件路径
         self.file_list = search_files(self.log_path, self.filter_dirname_list, self.filter_filename_list)
-        self.unknown_time_interval = unknown_time_interval
+        self.unknown_time_interval = self.conf.get('UNKNOWN_MAX_TIME', 3600)
 
         """
         self.unknown_result_list data structure
@@ -81,18 +80,15 @@ class UnknowShot(BaseShot):
 
 
 class RetryShot(BaseShot):
-    pattern = config['RETRY_PATTERN']
     name = 'retry_result_context'
 
-    def __init__(self, log_path, filter_dirname_list, filter_filename_list):
-        """
-        :param log_path:                日志所在的文件夹        '/mnt/teddywalker/log'
-        :param filter_dirname_list:     需要监控的文件夹名字      ['_info$']
-        :param filter_filename_list:    需要监控的文件名字       ['_info.log$']
-        """
-        self.log_path = log_path
-        self.filter_dirname_list = filter_dirname_list
-        self.filter_filename_list = filter_filename_list
+    def __init__(self, conf):
+        self.conf = conf
+        self.pattern = self.conf['RETRY_PATTERN']
+        self.log_path = self.conf['RETRY_LOG_PATH']
+        self.filter_dirname_list = self.conf['RETRY_LOG_FILTER_DIR']
+        self.filter_filename_list = self.conf['RETRY_LOG_FILTER_FILE']
+
         # 根据筛选条件，得出符合条件的文件路径
         self.file_list = search_files(self.log_path, self.filter_dirname_list, self.filter_filename_list)
         self.process_log = UsualLogging('Process')
@@ -100,7 +96,8 @@ class RetryShot(BaseShot):
         # 分析所有相关文件的最后 RETRY_LAST_LINES 行
         # 按照 retry_count 排序
         self.retry_result_list = sorted(
-            [self.count_linebase(each_file, self.pattern, config['RETRY_LAST_LINES']) for each_file in self.file_list],
+            [self.count_linebase(each_file, self.pattern, self.conf['RETRY_LAST_LINES']) for each_file in
+             self.file_list],
             key=lambda x: x[x.keys()[0]]['retry_count'], reverse=True)
 
     def count_linebase(self, file_path, pattern, num=100):
@@ -141,11 +138,11 @@ class RetryShot(BaseShot):
             for spider_name, v in each.items():
 
                 # 找出 retry 大于　RETRY_MAX_COUNT　的
-                if v['retry_count'] >= config['RETRY_MAX_COUNT']:
+                if v['retry_count'] >= self.conf['RETRY_MAX_COUNT']:
                     diff_time = time.time() - time.mktime(time.strptime(v['retry_last_time'], "%Y-%m-%d %H:%M:%S,%f"))
                     self.process_log.info(message='[debug] now_time - last_retry_time:' + str(diff_time))
                     # 时间差大于 RETRY_MAX_TIME
-                    if diff_time < config['RETRY_MAX_TIME']:
+                    if diff_time < self.conf['RETRY_MAX_TIME']:
                         ctx[self.name].append({
                             'name': spider_name,
                             'count': v['retry_count'],
@@ -158,7 +155,8 @@ class RetryShot(BaseShot):
 class SupervisorShot(BaseShot):
     name = 'supervisor_result_context'
 
-    def __init__(self):
+    def __init__(self, conf):
+        self.conf = conf
         self.supervisor_result_list = []
 
     def get_status(self):
@@ -169,11 +167,21 @@ class SupervisorShot(BaseShot):
 
         for i in fh.stdout.readlines():
             grp = re.search('([\d\w]+?)[\s]+?([\d\w]+?)[\s]+(.*?)\n', i)
+
+            path = os.path.join(self.conf['SPIDER_SUPERVISOR_LOG_PATH'], grp.group(1) + '_access.log')
+            lines = read_last_lines(path, self.conf.get('CHECK_LOG_LINE', 1000))
+
+            if 'spider_exceptions' in str(lines) or 'Traceback' in str(lines):
+                is_normal = False
+            else:
+                is_normal = True
+
             self.supervisor_result_list.append(
                 {
                     'name': grp.group(1),
                     'status': grp.group(2),
                     'message': re.sub('pid [\d]+, ', '', grp.group(3)),
+                    'is_normal': is_normal
                 }
             )
         return self.supervisor_result_list
@@ -183,8 +191,8 @@ class SupervisorShot(BaseShot):
         self.get_status()
         for each in self.supervisor_result_list:
             if (
-                            each['status'] not in config['SUPERVISOR_NORMAL_STATUS']
-                    and each['name'] not in config['SUPERVISOR_FILTERED_NAME'] \
+                            each['status'] not in self.conf['SUPERVISOR_NORMAL_STATUS']
+                    and each['name'] not in self.conf['SUPERVISOR_FILTERED_NAME'] \
                     ):
                 ctx[self.name].append(each)
 

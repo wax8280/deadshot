@@ -19,13 +19,13 @@ class DeadShot(object):
     callback相当于钩子函数，self.callbacks是一个由多个callback组成的钩子函数链。
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, conf):
         """shot完之后回调self.callbacks，用于装饰"""
 
         # 实例化shoter
-        self.retryshot_ins = RetryShot(**kwargs['supervisor_shot_ctx'])
-        self.unknowshot_ins = UnknowShot(**kwargs['unknowshot_shot_ctx'])
-        self.supervisorshot_ins = SupervisorShot()
+        self.retryshot_ins = RetryShot(conf)
+        self.unknowshot_ins = UnknowShot(conf)
+        self.supervisorshot_ins = SupervisorShot(conf)
 
         self.shoters = [
             self.retryshot_ins,
@@ -57,13 +57,7 @@ app = Flask(__name__)
 @app.route('/')
 def slave():
     reload(deadshot.config)
-    p = DeadShot(
-        supervisor_shot_ctx=(
-            {'log_path': deadshot.config.config['RETRY_LOG_PATH'],
-             'filter_dirname_list': deadshot.config.config['RETRY_LOG_FILTER_DIR'],
-             'filter_filename_list': deadshot.config.config['RETRY_LOG_FILTER_FILE']}),
-        unknowshot_shot_ctx=({'log_path': deadshot.config.config['UNKNOWN_LOG_PATH']}),
-    )
+    p = DeadShot(deadshot.config.config)
     result = p.run()
     return json.dumps(result)
 
@@ -72,13 +66,7 @@ def master():
     ctxs = []
     error_message = ''
 
-    p = DeadShot(
-        supervisor_shot_ctx=(
-            {'log_path': deadshot.config.config['RETRY_LOG_PATH'],
-             'filter_dirname_list': deadshot.config.config['RETRY_LOG_FILTER_DIR'],
-             'filter_filename_list': deadshot.config.config['RETRY_LOG_FILTER_FILE']}),
-        unknowshot_shot_ctx=({'log_path': deadshot.config.config['UNKNOWN_LOG_PATH']}),
-    )
+    p = DeadShot(deadshot.config.config)
     ctxs.append(p.run())
 
     for server_name, server_ip in deadshot.config.config['SLAVE_IP'].items():
