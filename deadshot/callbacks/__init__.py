@@ -30,5 +30,6 @@ def add_author(ctx):
                     if file_name.lower().replace('.py', '') in each_value_dict['name'].lower():
                         each_value_dict.update({'author': author.decode('utf-8')})
                     else:
-                        each_value_dict.update({'author': 'Anonymous'})
+                        if not each_value_dict.has_key('author'):
+                            each_value_dict.update({'author': 'Anonymous'})
     return ctx
