@@ -15,15 +15,8 @@ def add_server_name(ctx):
 def add_author(ctx):
     reload(deadshot.config)
     config = deadshot.config.config
-    all_project_name = set()
 
-    # 获取supervisor所有project name
-    for context_name, value_list in ctx.items():
-        for value in value_list:
-            project_name = value['name'].split('_')[0]
-            all_project_name.add(project_name)
-
-    for each_project_name in all_project_name:
+    for each_project_name in config['SPIDER_SCRIPT_PATH'].keys():
         # 获得该目录下所有不以"_"开头，并且以".py"结尾的文件路径
         files_path = search_files(config['SPIDER_SCRIPT_PATH'][each_project_name], [''], ['[^_].py$'])
         for each_file_path in files_path:
