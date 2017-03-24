@@ -22,7 +22,17 @@ def add_author(ctx):
         for each_file_path in files_path:
             command_ = "cd {} && git log -n 1 {}".format(config['SPIDER_GIT_PATH'][each_project_name], each_file_path)
             fh = subprocess.Popen(command_, stdout=subprocess.PIPE, shell=True)
-            author = re.search('Author:\s+(.*)$', list(fh.stdout.readlines())[1].strip()).group(1)
+
+            output = ''
+            for i in fh.stdout.readlines():
+                if i.startswith('Author'):
+                    output = i
+                    break
+
+            if output:
+                author = re.search('Author:\s+(.*)$', output).group(1)
+            else:
+                author = 'Anonymous'
 
             file_name = os.path.basename(each_file_path)
             for k, value_dict_list in ctx.items():

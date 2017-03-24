@@ -73,13 +73,14 @@ def master():
         try_time = 0
         while try_time < deadshot.config.config['MASTER_REQUSET_RETRY_TIME']:
             try:
-                res = requests.get('http://' + server_ip + ':' + str(deadshot.config.config['SLAVE_PORT']))
+                res = requests.get('http://' + server_ip + ':' + str(deadshot.config.config['SLAVE_PORT']), timeout=60)
+                try_time += 1
             except Exception as e:
                 traceback.print_exc()
                 try_time += 1
-                if try_time == deadshot.config.config['MASTER_REQUSET_RETRY_TIME']:
-                    error_message += "Reach the maximum retry.Server name:{}.\nErrInfo:{}\n".format(server_name, e)
-                continue
+
+            if try_time == deadshot.config.config['MASTER_REQUSET_RETRY_TIME']:
+                error_message += "Reach the maximum retry.Server name:{}.\nErrInfo:{}\n".format(server_name, e)
 
             if res.status_code == 200:
                 ctxs.append(json.loads(res.content))
