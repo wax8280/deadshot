@@ -176,8 +176,12 @@ EMAIL_API_URL : 'http://120.25.237.246:13150/api/5857cd86a542e930cc9c8dd5/emails
 
 # 以下为callback设置
 # ----------------- add_author -------------------
-SPIDER_SCRIPT_PATH : '/home/spider/teddywalker/teddywalker/spiders'
-SPIDER_GIT_PATH : '/home/spider/teddywalker'
+SPIDER_SCRIPT_PATH :
+    teddywalker : '/home/spider/teddywalker/teddywalker/spiders'
+
+SPIDER_GIT_PATH :
+    teddywalker : '/home/spider/teddywalker'
+
 
 # ----------------- add_server_name --------------
 SERVER_NAME : 'spider5'

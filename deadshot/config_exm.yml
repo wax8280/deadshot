@@ -77,8 +77,12 @@ EMAIL_API_URL : ''
 
 # 以下为callback设置
 # ----------------- add_author -------------------
-SPIDER_SCRIPT_PATH : '/home/spider/teddywalker/teddywalker/spiders'
-SPIDER_GIT_PATH : '/home/spider/teddywalker'
+SPIDER_SCRIPT_PATH :
+    teddywalker : '/home/spider/teddywalker/teddywalker/spiders'
+
+SPIDER_GIT_PATH :
+    teddywalker : '/home/spider/teddywalker'
+
 
 # ----------------- add_server_name --------------
 SERVER_NAME : 'spider5'
